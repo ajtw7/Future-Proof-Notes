@@ -41,3 +41,7 @@ Thumbs.db
 *.patch
 *.py~
 *.java~
+
+# All notes in the notes directory
+notes/
+

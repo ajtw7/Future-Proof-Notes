@@ -13,17 +13,11 @@ class Note:
         self.author = author
         self.status = status
         self.priority = priority
-        
-
-
-
-
-
-        return None
     
     def to_yaml(self) -> str:
         """Convert the note to a YAML string."""
-        head = {
+        # Filter out None values for YAML header
+        head = {k: v for k, v in {
             'title': self.title,
             'content': self.content,
             'created': self.created,
@@ -32,11 +26,7 @@ class Note:
             'author': self.author,
             'status': self.status,
             'priority': self.priority
-        }
-
-        yaml.dump(head, {k: v for k, v in head.items() if v is not None}) # Filter out None values
-
+        }.items() if v is not None}
         return f"---\n{yaml.dump(head)}---\n{self.content}"
 
 
-        
