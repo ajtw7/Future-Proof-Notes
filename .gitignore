@@ -45,3 +45,7 @@ Thumbs.db
 # All notes in the notes directory
 notes/
 
+# Misc
+lessons.md
+spec.md
+
