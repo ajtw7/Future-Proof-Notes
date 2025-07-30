@@ -29,4 +29,4 @@ class Note:
         }.items() if v is not None}
         return f"---\n{yaml.dump(head)}---\n{self.content}"
 
-
+        

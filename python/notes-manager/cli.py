@@ -22,7 +22,26 @@ def create():
 
 @app.command()
 def list():
-    typer.echo("Listing notes...")
+    notes_dir = Path("notes") # declaring notes path
+    for note_file in notes_dir.glob("*.note"):
+        with open(note_file, "r", encoding="utf-8") as f:
+            content = f.read()
+            # Skip empty files
+            if not content.strip():
+                continue
+            # Split on '---' and check if we have at least 2 '---' blocks
+            parts = content.split("---")
+            if len(parts) < 3:
+                typer.echo(f"{note_file.name}: Invalid note format")
+                continue
+            header = parts[1]
+            try:
+                import yaml
+                metadata = yaml.safe_load(header)
+                typer.echo(f"{note_file.name}: {metadata['title']} (Created: {metadata['created']})")
+            except Exception as e:
+                typer.echo(f"{note_file.name}: Error reading metadata - {e}")
+    
 
 @app.command()
 def read(note_id: int):
