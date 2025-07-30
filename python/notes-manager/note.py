@@ -1,10 +1,11 @@
 from datetime import datetime
 from typing import List, Optional
 import yaml
+import uuid
 
 class Note:
     def __init__(self, title: str, content: str, tags: Optional[List[str]] = None, created: Optional[datetime] = None,
-                 author: Optional[str] = None, status: Optional[str] = None, priority: Optional[str] = None):
+                 author: Optional[str] = None, status: Optional[str] = None, priority: Optional[str] = None, note_id: Optional[str] = None):
         self.title = title
         self.content = content
         self.tags = tags if tags is not None else []
@@ -13,7 +14,8 @@ class Note:
         self.author = author
         self.status = status
         self.priority = priority
-    
+        self.note_id = note_id if note_id is not None else str(uuid.uuid4()) # Generate a unique ID if not provided
+
     def to_yaml(self) -> str:
         """Convert the note to a YAML string."""
         # Filter out None values for YAML header
@@ -25,7 +27,8 @@ class Note:
             'tags': self.tags,
             'author': self.author,
             'status': self.status,
-            'priority': self.priority
+            'priority': self.priority,
+            'note_id': self.note_id
         }.items() if v is not None}
         return f"---\n{yaml.dump(head)}---\n{self.content}"
 

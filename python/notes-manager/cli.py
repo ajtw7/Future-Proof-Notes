@@ -1,7 +1,8 @@
 from note import Note
 from pathlib import Path
+import yaml
 import typer
-import os
+# import os
 
 app = typer.Typer()
 
@@ -14,11 +15,12 @@ def create():
     title = typer.prompt("Title")
     content = typer.prompt("Content")
     note = Note(title=title, content=content)
-    filename = f"{title.replace(' ', '_')}_{note.created}.note"
+    filename = f"{note.note_id}.note"
     filepath = Path("notes") / filename
     with open(filepath, "w", encoding="utf-8") as f: #  Ensure the file is opened in write mode
         f.write(note.to_yaml()) # Write the YAML representation of the note
     typer.echo(f"Note saved to {filepath}")
+    typer.echo(f"Note ID: {note.note_id}")
 
 @app.command()
 def list():
@@ -36,25 +38,40 @@ def list():
                 continue
             header = parts[1]
             try:
-                import yaml
                 metadata = yaml.safe_load(header)
-                typer.echo(f"{note_file.name}: {metadata['title']} (Created: {metadata['created']})")
+                typer.echo(f"{note_file.name}: {metadata['title']} (Created: {metadata.get('created')}) [{metadata.get('note_id')}]")
             except Exception as e:
                 typer.echo(f"{note_file.name}: Error reading metadata - {e}")
     
 
 @app.command()
-def read(note_id: int):
+def read(note_id: str):
     # define the file path based on note_id
+    file_path = Path("notes") / f"{note_id}.note"
     # if the filepath does not exist, raise an error
+    if not file_path.exists():
+        typer.echo("Note not found")
+        raise typer.Exit(code=1)
     # open the file and read its content
+    with open(file_path, "r", encoding="utf-8") as f:
     # define the main vars of the fn: parts and content
+        content = f.read()
+        parts = content.split("---")
         # if parts doesn't start with '---', AND have 3 parts, raise an error
+        if len(parts) < 3:
+                typer.echo("Invalid note format")
+                raise typer.Exit(code=1)
     # Define all parts [header, metadata, body]
+        header = parts[1]
+        metadata = yaml.safe_load(header) if header else {}
+        body = parts[2].strip()
     #Print Metadata and body
+        typer.echo("🗒️ Metadata:")
         # For loop through metadata based on key:value pairs (metadata.items())
-
-    typer.echo("Reading a note...")
+        for key, value in metadata.items():
+            typer.echo(f"{key}: {value}")
+        typer.echo("\n📝 Content:")
+        typer.echo(body)
 
 
 if __name__ == "__main__":
