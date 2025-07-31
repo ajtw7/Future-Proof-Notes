@@ -1,6 +1,8 @@
 from datetime import datetime
 from note import Note
+from search import Search_notes
 from pathlib import Path
+from rich import print
 import yaml
 import typer
 import subprocess
@@ -118,9 +120,21 @@ def delete(note_id:str):
     
     # rename the file_path to the trash path
     file_path.rename(trash_path)
-    
+
     # Print success message
     typer.echo(f"Note {note_id} moved to trash.")
+
+
+@app.command()
+def search(query:str):
+    """Search for notes containing the query string."""
+    results = Search_notes(query)
+    if not results:
+        typer.echo("🔎 No matches found.")
+    else:
+        typer.echo("🔎 Search Results")
+        for file_name, title in results: 
+            print(f"file_name: {file_name}, [red]title: {title}[/red]")  # Use red color for output
 
 
 
