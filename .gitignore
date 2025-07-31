@@ -42,8 +42,9 @@ Thumbs.db
 *.py~
 *.java~
 
-# All notes in the notes directory
+# All notes in the notes directory & trash
 notes/
+trash/
 
 # Misc
 lessons.md

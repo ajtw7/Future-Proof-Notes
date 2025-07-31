@@ -103,6 +103,26 @@ def edit(note_id: str):
         typer.echo(f"{metadata['title']} updated successfully.")
 
 
+@app.command()
+def delete(note_id:str):
+    # define the file path based on note_id
+    file_path = Path("notes") / f"{note_id}.note"
+    
+    # define the trash path
+    trash_path = Path("trash") / f"{note_id}.note"
+
+    # if the file path doesn't exist, raise an error
+    if not file_path.exists():
+        typer.echo("Note not found")
+        raise typer.Exit(code=1)
+    
+    # rename the file_path to the trash path
+    file_path.rename(trash_path)
+    
+    # Print success message
+    typer.echo(f"Note {note_id} moved to trash.")
+
+
 
 
 if __name__ == "__main__":
