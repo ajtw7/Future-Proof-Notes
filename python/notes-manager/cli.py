@@ -1,8 +1,10 @@
+from datetime import datetime
 from note import Note
 from pathlib import Path
 import yaml
 import typer
-# import os
+import subprocess
+import os
 
 app = typer.Typer()
 
@@ -72,6 +74,35 @@ def read(note_id: str):
             typer.echo(f"{key}: {value}")
         typer.echo("\n📝 Content:")
         typer.echo(body)
+
+@app.command()
+def edit(note_id: str):
+    file_path = Path("notes") / f"{note_id}.note"
+    if not file_path.exists():
+        typer.echo("Note not found")
+        raise typer.Exit(code=1)
+    subprocess.call([os.environ.get("EDITOR", 'nano'), str(file_path)]) # Open the file in the default editor
+    # update modified timestamp
+    with open(file_path, "r+", encoding="utf-8") as f:
+        content = f.read()
+        parts = content.split("---")
+        if len(parts) < 3:
+            typer.echo("invalid note format")
+            raise typer.Exit(code=1)
+        header = parts[1]
+        body = parts[2].lstrip('\n')
+
+        metadata = yaml.safe_load(header)
+        metadata['modified'] = datetime.utcnow().isoformat() + "Z"  # Update modified timestamp
+
+        # set new variables for metadata, content, and body
+        new_content = f"---\n{yaml.dump(metadata)}---\n{body}"
+        f.seek(0)
+        f.write(new_content)
+        f.truncate()
+        typer.echo(f"{metadata['title']} updated successfully.")
+
+
 
 
 if __name__ == "__main__":
