@@ -3,6 +3,7 @@ from note import Note
 from search import Search_notes
 from pathlib import Path
 from rich import print
+from collections import Counter
 import yaml
 import typer
 import subprocess
@@ -19,6 +20,8 @@ def create():
     title = typer.prompt("Title")
     content = typer.prompt("Content")
     note = Note(title=title, content=content)
+    tags = typer.prompt("Tags (comma separated)")
+    note.tags = tags.split(",") if tags else []
     filename = f"{note.note_id}.note"
     filepath = Path("notes") / filename
     with open(filepath, "w", encoding="utf-8") as f: #  Ensure the file is opened in write mode
@@ -109,18 +112,14 @@ def edit(note_id: str):
 def delete(note_id:str):
     # define the file path based on note_id
     file_path = Path("notes") / f"{note_id}.note"
-    
     # define the trash path
     trash_path = Path("trash") / f"{note_id}.note"
-
     # if the file path doesn't exist, raise an error
     if not file_path.exists():
         typer.echo("Note not found")
         raise typer.Exit(code=1)
-    
     # rename the file_path to the trash path
     file_path.rename(trash_path)
-
     # Print success message
     typer.echo(f"Note {note_id} moved to trash.")
 
@@ -137,6 +136,56 @@ def search(query:str):
             print(f"file_name: {file_name}, [red]title: {title}[/red]")  # Use red color for output
 
 
+@app.command()
+def stats():
+    """Display statistics about all notes."""            
+    # Declare the notes directory
+    notes_dir = Path("notes")
+    # declare total notes count
+    total_notes = 0
+    # decalare total tags count
+    tag_counter = Counter()
+    # declare total length of all notes
+    total_length = 0
+
+    # load through all notes in the notes directory
+    for note_file in notes_dir.glob("*.note"):
+        # for each note, read its content
+        with open(note_file, "r", encoding="utf-8") as f:
+            content = f.read()
+        # split the content on '---' to separate header and body
+            parts = content.split("---")
+                # if the split parts (header, body) are less than 3, continue to next file
+            if len(parts) < 3:
+                continue
+
+            # assign header from parts [1]
+            header = parts[1]
+
+            # load the metadata from the header
+            metadata = yaml.safe_load(header)
+
+            # assign body from parts [2]
+            body = parts[2].strip()
+
+            # increment the total notes count
+            total_notes += 1
+
+            # update the total length of all notes
+            total_length += len(body.split())
+
+            # update the total tags count
+            tag_counter.update(metadata.get('tags', []))
+
+    # print the total notes count
+    typer.echo(f"Total Notes: {total_notes}\n")
+    # print the average length of all notes
+    typer.echo(f"Avg Length of Notes: {total_length // total_notes if total_notes else 0} words\n")
+    # print the total tags count using for loop
+    typer.echo("Total Tags:")
+    for tag, count in tag_counter.most_common(5):
+        # print the tag and its count
+        typer.echo(f" — {tag}: {count} occurrences")
 
 
 if __name__ == "__main__":

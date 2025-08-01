@@ -27,6 +27,5 @@ def Search_notes(query:str):
                 results.append((
                     note_file.name, metadata.get('title', 'Untitled')
                 ))
-    return results
-
     # else, print the results
+    return results
